@@ -1,7 +1,10 @@
 function fig = plot_ftle(X, Y, FTLE, ttl, visibility)
    
-   MLcm = 1 ; DXcm = 10; MRcm = 2 ;
-   MBcm = .7; DYcm = 5 ; MTcm = .7;
+   DXcm = 10;
+   DYcm = DXcm * (max(max(Y)) - min(min(Y))) / (max(max(X)) - min(min(X)));
+   MLcm = 1 ;  MRcm = 2 ;
+   MBcm = .7;  ; MTcm = .7;
+   
    CBMLcm = .5; CBWcm = .3;
    
    xSize = MLcm + DXcm + MRcm;
