@@ -7,9 +7,9 @@ function [Ux, Uy] = rotor_oscillator_flow(t, XY, delta, Fx, Fy, param)
      case 0   % constant amplitude
        amp = param.amp;
      case 1   % Sine wave
-       amp = param.amp * sin( param.omswitch*t + param.amp_phi );
+       amp = param.amp * sin( param.amp_omega*t + param.amp_phi );
      case 2   % Square wave   
-       amp = param.amp * sign( sin( param.omswitch*t + param.amp_phi ) );
+       amp = param.amp * sign( sin( param.amp_omega*t + param.amp_phi ) );
    end
    
    Ux = amp * Ux;

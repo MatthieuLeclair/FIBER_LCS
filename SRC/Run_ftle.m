@@ -28,7 +28,7 @@ RO_parameters.omega     = 2*pi/5      ;   % pulsation of oscillation
 RO_parameters.amp_type  = 0           ;   % type of amplitude evolution: 0 => constant ; 1 => sinusoidal ; 2 => square
 RO_parameters.amp       = 1           ;   % amplitude of the stream function
 RO_parameters.amp_omega = 2*pi/10     ;   % amplitude pulsation
-RO_parameters.amp_phi   = 0*pi        ;   % amplitude phase
+RO_parameters.amp_phi   = 0*pi        ;   % amplitude initial phase
 
 % rotor oscillator generator options
 RO_generator_file   = '../INPUT/RO_interpolant_01' ;  % file where interpolant is read or written 
@@ -48,7 +48,7 @@ fiber_parameters.Re  = 1.e-3;     % Reynolds number
 
 % Result file
 % -----------
-result_file = 'test_0_5';
+result_file = 'test';
 
 % Time info
 % ---------
