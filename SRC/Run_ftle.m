@@ -14,18 +14,21 @@ DG_parameters.e = 0.25       ;  % Magnitude of the transversal oscillation
 DG_parameters.omega = 2*pi/10;  % frequency of gyre oscillation
 
 % rotor oscillator generator parameters
-RO_generator_parameters.x_range = [-1 1]     ;  % ??
-RO_generator_parameters.y_range = [-2.5 2.5] ;  % ??
-RO_generator_parameters.dx      = 0.01       ;  % ??
-RO_generator_parameters.dy      = 0.01       ;  % ??
-RO_generator_parameters.a       = 0.003      ;  % ??
-RO_generator_parameters.h       = 0.01       ;  % ??
-RO_generator_parameters.c       = 0.54       ;  % ??
+RO_generator_parameters.x_range = [-1 1]     ;   % add description here
+RO_generator_parameters.y_range = [-2.5 2.5] ;   % add description here
+RO_generator_parameters.dx      = 0.01       ;   % add description here
+RO_generator_parameters.dy      = 0.01       ;   % add description here
+RO_generator_parameters.a       = 0.003      ;   % add description here
+RO_generator_parameters.h       = 0.01       ;   % add description here
+RO_generator_parameters.c       = 0.54       ;   % add description here
 
 % rotor oscillator flow parameters
-RO_parameters.eps   = 0.5         ;  % amplitude of oscillation
-RO_parameters.omega = 2*pi/10     ;  % pulsation of oscillation
-% RO_parameters.alpha  = 0.0566    ;  % ??
+RO_parameters.eps       = 0.125       ;   % amplitude of oscillation
+RO_parameters.omega     = 2*pi/5      ;   % pulsation of oscillation
+RO_parameters.amp_type  = 0           ;   % type of amplitude evolution: 0 => constant ; 1 => sinusoidal ; 2 => square
+RO_parameters.amp       = 1           ;   % amplitude of the stream function
+RO_parameters.amp_omega = 2*pi/10     ;   % amplitude pulsation
+RO_parameters.amp_phi   = 0*pi        ;   % amplitude phase
 
 % rotor oscillator generator options
 RO_generator_file   = '../INPUT/RO_interpolant_01' ;  % file where interpolant is read or written 
