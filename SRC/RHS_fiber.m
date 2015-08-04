@@ -35,8 +35,8 @@ function F = RHS_fiber(t, State, flow_field, param)
    
    F(:,1) = X_dot;
    F(:,2) = Y_dot;
-   F(:,3) = DUxDt - pre_fact_1 * ( (L1*COS_2 + L2*SIN_2.^2) .* (X_dot- Ux)  + COS_SIN .* (Y_dot- Uy) );
-   F(:,4) = DUyDt - pre_fact_1 * ( (L1*SIN_2 + L2*COS_2.^2) .* (Y_dot- Uy)  + COS_SIN .* (X_dot- Ux) );
+   F(:,3) = DUxDt - pre_fact_1 * ( (L1*COS_2 + L2*SIN_2) .* (X_dot- Ux)  + COS_SIN .* (Y_dot- Uy) );
+   F(:,4) = DUyDt - pre_fact_1 * ( (L1*SIN_2 + L2*COS_2) .* (Y_dot- Uy)  + COS_SIN .* (X_dot- Ux) );
    F(:,5) = rotation + pre_fact_2 * ( sin(2*Theta).*(du(:,1)-du(:,2)) - cos(2*Theta).*(du(:,4)+du(:,3)) );
       
 end
