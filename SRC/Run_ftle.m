@@ -7,10 +7,12 @@ close all
 
 % Flow_field
 % ----------
+%flow_field = 'double_gyre';
 flow_field = 'rotor_oscillator';
+
 % double gyre flow parameters
 DG_parameters.A = 0.1        ;  % Amplitude of the stream function
-DG_parameters.e = 0.25       ;  % Magnitude of the transversal oscillation
+DG_parameters.e = 0;%0.25       ;  % Magnitude of the transversal oscillation
 DG_parameters.omega = 2*pi/10;  % frequency of gyre oscillation
 
 % rotor oscillator generator parameters
@@ -23,8 +25,8 @@ RO_generator_parameters.h       = 0.01       ;   % add description here
 RO_generator_parameters.c       = 0.54       ;   % add description here
 
 % rotor oscillator flow parameters
-RO_parameters.eps       = 0.125       ;   % amplitude of oscillation
-RO_parameters.omega     = 2*pi/5      ;   % pulsation of oscillation
+RO_parameters.eps       = 1       ;   % amplitude of oscillation
+RO_parameters.omega     = 2*pi      ;   % pulsation of oscillation
 RO_parameters.amp_type  = 0           ;   % type of amplitude evolution: 0 => constant ; 1 => sinusoidal ; 2 => square
 RO_parameters.amp       = 1           ;   % amplitude of the stream function
 RO_parameters.amp_omega = 2*pi/10     ;   % amplitude pulsation
@@ -42,18 +44,20 @@ l_Cauchy_Green = true ;   % Compute CG tensor if true otherwise only advect part
 
 % Parameters for fiber particles
 % ------------------------------
-fiber_parameters.eps = 1    ;     % ellipse aspect ratio: epsilon =  b/a
-fiber_parameters.St  = 1.e-3;     % particle Stokes number
+fiber_parameters.eps = 8    ;     % ellipse aspect ratio: epsilon =  b/a
+fiber_parameters.St  = 3.e-2;     % particle Stokes number
 fiber_parameters.Re  = 1.e-3;     % Reynolds number
 
 % Result file
 % -----------
-result_file = 'test';
+%result_file = 'Sphere_V_0_St005';
+result_file = 'Tracer_RO';
+%result_file = 'Ellipses_V_0_th_rdm_St_003_eps_8_steadyflow_backTEST';
 
 % Time info
 % ---------
 t_init = 0;          % Initial time
-t_fin = 20;          % Final time
+t_fin = 120;          % Final time
 out_period = -1;     % Intermediate state output every out_period time steps
                      % Put negative value for no intermediate output => only initial and final states
 
@@ -65,18 +69,21 @@ x_min = -1 ; x_max = 1 ;   % x domain boundaries
 y_min = -2.5 ; y_max = 2.5 ;   % y domain boundaries
 dx = 0.01 ; dy = 0.01 ;   % Resolution
 
-init_at_rest = false  ;   % if false, start at local fluid velocity
+init_at_rest = true  ;   % if false, start at local fluid velocity
+Vinit = 1;               % start at local fluid velocity times Vinit
 
 cluster_size = 1.e-5  ;   % Size of the cluster for computing flow map gradient
 
 % Figure info
 % -----------
 final_figure_plot = true;
-format = 'png';
-visibility = 'off';
+format = 'fig';
+visibility = 'on';
 l_export = true;
 resolution = 680;
-ttl = 'test';
+%ttl = 'Ellipses with St = 0.03 eps = 8 theta = rdm steady flow backward TEST';
+%ttl = 'Sphere with St = 0.05';
+ttl = 'Tracers RO flow';
 
 % ======================================================================================
 %                                      PROGRAM INIT
@@ -99,7 +106,7 @@ if( ~ismember(flow_field, {'double_gyre', 'rotor_oscillator'} ) )
            '''double_gyre''', '''rotor_oscillator''')
    return
 end
-if( ~ismember(particle_type, {'fiber', 'passive'} ) )
+if( ~ismember(particle_type, {'fiber', 'passive', 'sphere'} ) )
    fprintf('ERROR: Choose between the folloing available particle types:\n   %s or %s\n', ...
            '''fiber''', '''passive''')
    return
@@ -148,8 +155,8 @@ if( strcmp(particle_type, 'fiber') )
       switch flow_field
         case 'double_gyre'
           [X_dot_0, Y_dot_0]  = double_gyre_flow(t_init, [X_0 , Y_0], delta, DG_parameters);
-          X_dot_0 = 0.9 * X_dot_0;
-          Y_dot_0 = 0.9 * Y_dot_0;
+          X_dot_0 = Vinit * X_dot_0;
+          Y_dot_0 = Vinit * Y_dot_0;
         case 'rotor_oscillator'
           [X_dot_0, Y_dot_0]  = rotor_oscillator_flow(t_init, [X_0, Y_0], delta, Fx, Fy, RO_parameters);
       end
@@ -157,8 +164,9 @@ if( strcmp(particle_type, 'fiber') )
 
    % Angle
    % -----
-   Theta_0 = zeros(sz);
-   % Theta_0 = rand(sz)*2*pi;
+   % Theta_0 = zeros(sz);
+   % Theta_0 = ones(sz)*75*pi/180;
+    Theta_0 = rand(sz)*2*pi;
    % switch flow_field
    %   case 'double_gyre'
    %     [~, ~, ~, ~, du, ~] = double_gyre_flow_and_grad( t_init, [X_0 , Y_0], delta, DG_parameters );
@@ -172,6 +180,27 @@ if( strcmp(particle_type, 'fiber') )
    % ------------
    State_init = [X_0 Y_0 X_dot_0 Y_dot_0 Theta_0];
    clear X_0 Y_0 X_dot_0 Y_dot_0 Theta_0
+   
+elseif( strcmp(particle_type, 'sphere') )
+    % Velocity
+   % --------
+   if init_at_rest
+      X_dot_0 = zeros(sz);
+      Y_dot_0 = zeros(sz);
+   else   % init with local velocity
+      switch flow_field
+        case 'double_gyre'
+          [X_dot_0, Y_dot_0]  = double_gyre_flow(t_init, [X_0 , Y_0], delta, DG_parameters);
+          X_dot_0 = Vinit * X_dot_0;
+          Y_dot_0 = Vinit * Y_dot_0;
+        case 'rotor_oscillator'
+          [X_dot_0, Y_dot_0]  = rotor_oscillator_flow(t_init, [X_0, Y_0], delta, Fx, Fy, RO_parameters);
+          
+      end
+   end
+   State_init = [X_0 Y_0 X_dot_0 Y_dot_0];
+   clear X_0 Y_0 X_dot_0 Y_dot_0
+
 else
    State_init = [X_0 Y_0];
    clear X_0 Y_0
@@ -188,27 +217,35 @@ tic_id = tic;
 % Determine flow field and RHS functions
 % --------------------------------------
 switch flow_field
-  case 'double_gyre'
-    switch particle_type
-      case 'passive'
-        flow_field_handle = @(t, XY) double_gyre_flow( t, XY, delta, DG_parameters );
-        RHS = @(t, State) RHS_passive( t, State, flow_field_handle );
-      case 'fiber'
-        flow_field_handle = @(t, XY) double_gyre_flow_and_grad( t, XY, delta, DG_parameters );
-        RHS = @(t, State) RHS_fiber( t, State, flow_field_handle, fiber_parameters );
-    end
-  case 'rotor_oscillator'
-    switch particle_type
-      case 'passive'
-        flow_field_handle = @(t, XY) rotor_oscillator_flow( t, XY, delta, Fx, Fy, RO_parameters);
-        RHS = @(t, State) RHS_passive( t, State, flow_field_handle );
-      case 'fiber'
-        fprintf('ERROR: Only double gyre coded for fibers so far\n')
+    case 'double_gyre'
+        switch particle_type
+            case 'passive'
+                flow_field_handle = @(t, XY) double_gyre_flow( t, XY, delta, DG_parameters );
+                RHS = @(t, State) RHS_passive( t, State, flow_field_handle );
+            case 'fiber'
+                flow_field_handle = @(t, XY) double_gyre_flow_and_grad( t, XY, delta, DG_parameters );
+                RHS = @(t, State) RHS_fiber( t, State, flow_field_handle, fiber_parameters );
+            case 'sphere'
+                flow_field_handle = @(t, XY) double_gyre_flow_and_grad( t, XY, delta, DG_parameters );
+                RHS = @(t, State) RHS_sphere( t, State, flow_field_handle, sphere_parameters );
+        end
+        
+    case 'rotor_oscillator'
+        switch particle_type
+            case 'passive'
+                flow_field_handle = @(t, XY) rotor_oscillator_flow( t, XY, delta, Fx, Fy, RO_parameters);
+                RHS = @(t, State) RHS_passive( t, State, flow_field_handle );
+            case 'fiber'
+                fprintf('ERROR: Only double gyre coded for fibers so far\n')
+                return
+            case 'sphere'
+                fprintf('ERROR: Only double gyre coded for spheres so far\n')
+                return
+        end
+        
+    otherwise
+        fprintf('ERROR: Only double gyre and rotor oscillator available\n')
         return
-    end
-  otherwise
-    fprintf('ERROR: Only double gyre and rotor oscillator available\n')
-    return
 end
 
 % Integrate particle trajectories
@@ -228,9 +265,12 @@ n_out = size(State_out, 3);
 X = reshape( State_out(1:n_part,1,:), [sz_ini n_out] );
 Y = reshape( State_out(1:n_part,2,:), [sz_ini n_out] );
 if( strcmp(particle_type, 'fiber') )
-   X_dot = reshape( State_out(1:n_part,3,:), [sz_ini n_out] );
-   Y_dot = reshape( State_out(1:n_part,4,:), [sz_ini n_out] );
-   Theta = reshape( State_out(1:n_part,5,:), [sz_ini n_out] );
+    X_dot = reshape( State_out(1:n_part,3,:), [sz_ini n_out] );
+    Y_dot = reshape( State_out(1:n_part,4,:), [sz_ini n_out] );
+    Theta = reshape( State_out(1:n_part,5,:), [sz_ini n_out] );
+elseif( strcmp(particle_type, 'sphere') )
+    X_dot = reshape( State_out(1:n_part,3,:), [sz_ini n_out] );
+    Y_dot = reshape( State_out(1:n_part,4,:), [sz_ini n_out] );
 end
 
 % Compute the Cauchy Green invariants
@@ -280,11 +320,17 @@ result_obj.X     = X     ;
 result_obj.Y     = Y     ;
 result_obj.time  = t_out ;
 if( strcmp(particle_type, 'fiber') )
-   result_obj.X_dot            = X_dot            ;
-   result_obj.Y_dot            = Y_dot            ;
-   result_obj.Theta            = Theta            ;
-   result_obj.fiber_parameters = fiber_parameters ;
+    result_obj.X_dot            = X_dot            ;
+    result_obj.Y_dot            = Y_dot            ;
+    result_obj.Theta            = Theta            ;
+    result_obj.fiber_parameters = fiber_parameters ;
+    
+elseif( strcmp(particle_type, 'sphere') )
+    result_obj.X_dot            = X_dot            ;
+    result_obj.Y_dot            = Y_dot            ;
+    result_obj.sphere_parameters = sphere_parameters ;
 end
+
 if( strcmp(flow_field, 'double_gyre') )
    result_obj.DG_parameters = DG_parameters;
 elseif( strcmp(flow_field, 'rotor_oscillator') )
@@ -295,6 +341,7 @@ elseif( strcmp(flow_field, 'rotor_oscillator') )
       result_obj.RO_generator_parameters = RO_generator_parameters;
    end
 end
+
 if( l_Cauchy_Green )
    result_obj.lda1  = lda1  ;
    result_obj.lda2  = lda2  ;

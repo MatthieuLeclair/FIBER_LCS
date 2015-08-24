@@ -19,7 +19,8 @@ function F = RHS_fiber(t, State, flow_field, param)
    L1 = (param.eps^2 - 1) / ( 2*((2*param.eps^2 - 1)*log(param.eps+sqrt(param.eps^2 - 1))/sqrt(param.eps^2 - 1))  - param.eps) ;
    L2 = (param.eps^2 - 1) / (   ((2*param.eps^2 - 3)*log(param.eps+sqrt(param.eps^2 - 1))/sqrt(param.eps^2 - 1))  + param.eps) ;
    
-   pre_fact_1 = (8*param.Re)/(3*param.St);
+   %pre_fact_1 = (8*param.Re)/(3*param.St);
+   pre_fact_1 = 2/3 *1/(6*param.eps*param.St);
    pre_fact_2 = 1/2*(1-param.eps^2)/(1+param.eps^2);
    
    % Flow properties

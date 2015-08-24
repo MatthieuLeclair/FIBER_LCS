@@ -2,7 +2,7 @@ function [Fx Fy] = generate_RO_flow(param, file, l_load, l_save)
 
    % Setup dimensions
    a = param.a; %radius in m
-   h = param.h;  %tank width in m - was 9.9cm
+   h = param.h; %tank width in m - was 9.9cm
    c = param.c; %initial position of the rod/rotor on the c axis (y=0)
 
    if( ~l_load )
