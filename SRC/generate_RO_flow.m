@@ -104,8 +104,8 @@ function [Ux0 Uy0 varargout] = generate_RO_flow(param, file, l_load, l_save, l_g
          psidy(k) = psidy(k) + quadgk(fdiffy,kmin,kmax,'WayPoints',0);
       end
       
-      psidx(isinf(psidx)|isnan(psidx)) = 0;
-      psidy(isinf(psidy)|isnan(psidy)) = 0;
+      % psidx(isinf(psidx)|isnan(psidx)) = 0;
+      % psidy(isinf(psidy)|isnan(psidy)) = 0;
 
       % Create interpolants
       % -------------------
