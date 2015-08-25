@@ -24,7 +24,7 @@ function F = RHS_fiber(t, State, flow_field, param)
    pre_fact_2 = 1/2*(1-param.eps^2)/(1+param.eps^2);
    
    % Flow properties
-   [Ux, Uy, DUxDt, DUyDt, du, rotation] = flow_field(t, [X,Y]);
+   [Ux, Uy, DUx_Dt, DUy_Dt, dux_dx, dux_dy, duy_dx, duy_dy, rotation] = flow_field(t, [X,Y]);
    
    % Right Hand Side
    COS = cos(Theta);
@@ -36,8 +36,8 @@ function F = RHS_fiber(t, State, flow_field, param)
    
    F(:,1) = X_dot;
    F(:,2) = Y_dot;
-   F(:,3) = DUxDt - pre_fact_1 * ( (L1*COS_2 + L2*SIN_2) .* (X_dot- Ux)  + COS_SIN .* (Y_dot- Uy) );
-   F(:,4) = DUyDt - pre_fact_1 * ( (L1*SIN_2 + L2*COS_2) .* (Y_dot- Uy)  + COS_SIN .* (X_dot- Ux) );
-   F(:,5) = rotation + pre_fact_2 * ( sin(2*Theta).*(du(:,1)-du(:,2)) - cos(2*Theta).*(du(:,4)+du(:,3)) );
+   F(:,3) = DUx_Dt - pre_fact_1 * ( (L1*COS_2 + L2*SIN_2) .* (X_dot- Ux)  + COS_SIN .* (Y_dot- Uy) );
+   F(:,4) = DUy_Dt - pre_fact_1 * ( (L1*SIN_2 + L2*COS_2) .* (Y_dot- Uy)  + COS_SIN .* (X_dot- Ux) );
+   F(:,5) = rotation + pre_fact_2 * ( sin(2*Theta).*(dUx_dx-dUy_dy) - cos(2*Theta).*(dUy_dx+dUx_dy) );
       
 end

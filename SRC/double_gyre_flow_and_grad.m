@@ -1,4 +1,4 @@
-function [Ux, Uy, DUxDt, DUyDt, du, rotation] = double_gyre_flow_and_grad( t, XY, delta, param )
+function [Ux, Uy, DUx_Dt, DUy_Dt, dux_dx, dux_dy, duy_dx, duy_dy, rotation] = double_gyre_flow_and_grad( t, XY, delta, param )
 
 % XY is the field with the x and y coordinates of points where u and v need
 % to be determined
@@ -27,24 +27,18 @@ Ux = delta * (-pi*A*sin(pi*f).*cos(pi*XY(:,2)));
 Uy = delta * (pi*A*cos(pi*f).*sin(pi*XY(:,2)).*dfdx);
 
 %fluid gradients: du_x / dx, du_y / dy, du_x /dy and du_y /dx
-dux_dx = delta * (-pi^2*A*cos(pi*f).*dfdx.*cos(pi*XY(:,2)));
-duy_dy = - dux_dx;
-dux_dy = delta * (pi^2*A*sin(pi*f).*sin(pi*XY(:,2)));
-duy_dx = delta * (pi*A*sin(pi*XY(:,2)).*( -pi*sin(pi*f).*dfdx.^2 + cos(pi*f).*dfdx2 ));
-
-du(:,1) = dux_dx;
-du(:,2) = duy_dy;
-du(:,3) = dux_dy;
-du(:,4) = duy_dx;
+dUx_dx = delta * (-pi^2*A*cos(pi*f).*dfdx.*cos(pi*XY(:,2)));
+dUy_dy = - dUx_dx;
+dUx_dy = delta * (pi^2*A*sin(pi*f).*sin(pi*XY(:,2)));
+dUy_dx = delta * (pi*A*sin(pi*XY(:,2)).*( -pi*sin(pi*f).*dfdx.^2 + cos(pi*f).*dfdx2 ));
 
 rotation = 1/2*(duy_dx - dux_dy);
 
 % fluid accelaration: Du/Dt = du/dt + (u.nabla)u
-dux_dt= C*cos(pi*XY(:,2))*cos(omega*t).*cos(pi*f).*(XY(:,1).^2 - 2*XY(:,1));
-%dudt(:,2) = C*sin(pi*XY(:,2))*cos(omega*t).*( - (XY(:,1).^2 - 2*XY(:,1)).*sin(pi*f).*(1 + 2*e*(XY(:,1)-2)) + 2/pi.*cos(pi*f).*(XY(:,1)-2) );
-duy_dt = C*sin(pi*XY(:,2))*cos(omega*t).*( (XY(:,1).^2 - 2*XY(:,1)).*sin(pi*f).*(1 + 2*e*sin(omega*t).*(XY(:,1)-1)) - 2/pi.*cos(pi*f).*(XY(:,1) - 1) );
+dUx_dt = C*cos(pi*XY(:,2))*cos(omega*t).*cos(pi*f).*(XY(:,1).^2 - 2*XY(:,1));
+dUy_dt = C*sin(pi*XY(:,2))*cos(omega*t).*( (XY(:,1).^2 - 2*XY(:,1)).*sin(pi*f).*(1 + 2*e*sin(omega*t).*(XY(:,1)-1)) - 2/pi.*cos(pi*f).*(XY(:,1) - 1) );
 
-DUxDt = dux_dt + Ux.*dux_dx + Uy.*dux_dy;
-DUyDt = duy_dt + Ux.*duy_dx + Uy.*duy_dy;
+DUx_Dt = dUx_dt + Ux.*dUx_dx + Uy.*dUx_dy;
+DUy_Dt = dUy_dt + Ux.*dUy_dx + Uy.*dUy_dy;
 
 end

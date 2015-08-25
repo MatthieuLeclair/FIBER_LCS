@@ -1,4 +1,4 @@
-function [Ux, Uy, DUxDt, DUyDt, du, rotation] = rotor_oscillator_flow_and_grad(t, XY, delta, Ux0, Uy0, dUx0_dx, dUx0_dy, dUy0_dx, dUy0_dy, param)
+function [Ux, Uy, DUxDt, DUyDt, dUx_dx, dUx_dy, dUy_dx, dUy_dy, rotation] = rotor_oscillator_flow_and_grad(t, XY, delta, Ux0, Uy0, dUx0_dx, dUx0_dy, dUy0_dx, dUy0_dy, param)
    
    % Amplitude
    switch param.amp_type
@@ -15,17 +15,17 @@ function [Ux, Uy, DUxDt, DUyDt, du, rotation] = rotor_oscillator_flow_and_grad(t
    Y_pseudo = XY(:,2) - param.eps * sin(param.omega*t);
    
    % Velocity and Velocity spatial gradients without amplitude and time direction yet
-   Ux      = Ux0    ( X_pseudo , Y_pseudo );
-   Uy      = Uy0    ( X_pseudo , Y_pseudo );
-   du(:,1) = dUx0_dx( X_pseudo , Y_pseudo );
-   du(:,2) = dUy0_dy( X_pseudo , Y_pseudo );
-   du(:,3) = dUx0_dy( X_pseudo , Y_pseudo );
-   du(:,4) = dUy0_dx( X_pseudo , Y_pseudo );
+   Ux     = Ux0    ( X_pseudo , Y_pseudo );
+   Uy     = Uy0    ( X_pseudo , Y_pseudo );
+   dUx_dx = dUx0_dx( X_pseudo , Y_pseudo );
+   dUy_dy = dUy0_dy( X_pseudo , Y_pseudo );
+   dUx_dy = dUx0_dy( X_pseudo , Y_pseudo );
+   dUy_dx = dUy0_dx( X_pseudo , Y_pseudo );
    
    % Velocity time derivative
    dY_pseudo_dt = - param.omega * param.eps * cos(param.omega*t);
-   dUx_dt = amp * du(:,3) * dY_pseudo_dt;
-   dUy_dt = amp * du(:,2) * dY_pseudo_dt;
+   dUx_dt = amp * dUx_dy * dY_pseudo_dt;
+   dUy_dt = amp * dUy_dy * dY_pseudo_dt;
    if( param.amp_type == 1 )
        damp_dt = param.amp_omega * param.amp * cos( param.amp_omega*t + param.amp_phi );
        dUx_dt = dUx_dt + damp_dt * Ux; 
@@ -33,15 +33,18 @@ function [Ux, Uy, DUxDt, DUyDt, du, rotation] = rotor_oscillator_flow_and_grad(t
    end
    
    % Multiply Velocity and Velocity spatial gradients by amplitude and time direction
-   Ux = delta * amp * Ux;
-   Uy = delta * amp * Uy;
-   du = delta * amp * du;
+   Ux     = delta * amp * Ux    ;
+   Uy     = delta * amp * Uy    ;
+   dUx_dx = delta * amp * dUx_dx; 
+   dUy_dy = delta * amp * dUy_dy; 
+   dUx_dy = delta * amp * dUx_dy; 
+   dUy_dx = delta * amp * dUy_dx; 
    
    % Compute "full" velocity time derivative
-   DUxDt = dUx_dt + Ux.*du(:,1) + Uy.*du(:,3);
-   DUyDt = dUy_dt + Ux.*du(:,4) + Uy.*du(:,2);
+   DUxDt = dUx_dt + Ux.*dUx_dx + Uy.*dUx_dy;
+   DUyDt = dUy_dt + Ux.*dUy_dx + Uy.*dUy_dy;
    
    % Compute rotation
-   rotation = 1/2 * ( du(:,4) - du(:,3) );
+   rotation = 1/2 * ( dUy_dx - dUx_dy );
 
 end

@@ -37,14 +37,14 @@ delta = sign(t_fin - t_init);
 if strcmp(flow_field, 'rotor_oscillator')
    l_grad = strcmp(particle_type, 'fiber');
    if( l_grad )
-      [ Ux0, Uy0 ] = generate_RO_flow( RO_generator_parameters, ...
-                                       RO_generator_file, RO_generator_load, RO_generator_save, ...
-                                       l_grad );
-   else
       [ Ux0, Uy0, dUx0_dx, dUx0_dy, dUy0_dx, dUy0_dy ] = ...
           generate_RO_flow( RO_generator_parameters, ...
                             RO_generator_file, RO_generator_load, RO_generator_save, ...
                             l_grad );
+   else
+      [ Ux0, Uy0 ] = generate_RO_flow( RO_generator_parameters, ...
+                                       RO_generator_file, RO_generator_load, RO_generator_save, ...
+                                       l_grad );
    end
 end
 
@@ -173,7 +173,6 @@ switch flow_field
                                                           dUx0_dx, dUx0_dy, dUy0_dx, dUy0_dy, ...
                                                           RO_parameters);
         RHS = @(t, State) RHS_fiber( t, State, flow_field_handle, fiber_parameters );
-        return
       case 'sphere'
         fprintf('ERROR: Only double gyre coded for spheres so far\n')
         return
@@ -275,12 +274,12 @@ elseif( strcmp(flow_field, 'rotor_oscillator') )
 end
 
 if( l_Cauchy_Green )
-   result_obj.lda1  = lda1  ;
-   result_obj.lda2  = lda2  ;
-   result_obj.xi1x  = xi1x  ;
-   result_obj.xi1y  = xi1y  ;
-   result_obj.xi2x  = xi2x  ;
-   result_obj.xi2y  = xi2y  ;
+   result_obj.lda1  = lda1 ;
+   result_obj.lda2  = lda2 ;
+   result_obj.xi1x  = xi1x ;
+   result_obj.xi1y  = xi1y ;
+   result_obj.xi2x  = xi2x ;
+   result_obj.xi2y  = xi2y ;
 end
 
 % ======================================================================================
