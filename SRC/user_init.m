@@ -1,12 +1,12 @@
 % Flow_field
 % ----------
-%flow_field = 'double_gyre';
-flow_field = 'rotor_oscillator';
+flow_field = 'double_gyre';
+% flow_field = 'rotor_oscillator';
 
 % double gyre flow parameters
-DG_parameters.A = 0.1        ;  % Amplitude of the stream function
-DG_parameters.e = 0.25       ;  % Magnitude of the transversal oscillation
-DG_parameters.omega = 2*pi/10;  % frequency of gyre oscillation
+DG_parameters.A = 0.1         ;  % Amplitude of the stream function
+DG_parameters.e = 0.25        ;  % Magnitude of the transversal oscillation
+DG_parameters.omega = 2*pi/10 ;  % frequency of gyre oscillation
 
 % rotor oscillator generator parameters
 RO_generator_parameters.x_range = [-1 1]     ;   % add description here
@@ -57,9 +57,9 @@ DT = 1.e-1;          % RK4 time step
 % Initial conditions
 % ------------------
 % Domain
-x_min = -1   ; x_max = 1   ;   % x domain boundaries
-y_min = -2.5 ; y_max = 2.5 ;   % y domain boundaries
-dx = 0.01    ; dy = 0.01   ;   % Resolution
+x_min = 0  ; x_max = 2 ;   % x domain boundaries
+y_min = 0  ; y_max = 1 ;   % y domain boundaries
+dx = 0.01  ; dy = 0.01 ;   % Resolution
 % Velocity
 init_at_rest = true  ;   % if false, start at local fluid velocity
 init_coeff   = 1     ;   % start at local fluid velocity x init_coeff

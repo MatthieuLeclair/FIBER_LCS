@@ -4,8 +4,86 @@ close all
 % ======================================================================================
 %                                       USER INIT
 % ======================================================================================
-init_file = 'user_init';
-run(init_file);
+
+% Flow_field
+% ----------
+%flow_field = 'double_gyre';
+flow_field = 'rotor_oscillator';
+
+% double gyre flow parameters
+DG_parameters.A = 0.1        ;  % Amplitude of the stream function
+DG_parameters.e = 0;%0.25       ;  % Magnitude of the transversal oscillation
+DG_parameters.omega = 2*pi/10;  % frequency of gyre oscillation
+
+% rotor oscillator generator parameters
+RO_generator_parameters.x_range = [-1 1]     ;   % add description here
+RO_generator_parameters.y_range = [-2.5 2.5] ;   % add description here
+RO_generator_parameters.dx      = 0.01       ;   % add description here
+RO_generator_parameters.dy      = 0.01       ;   % add description here
+RO_generator_parameters.a       = 0.003      ;   % add description here
+RO_generator_parameters.h       = 0.01       ;   % add description here
+RO_generator_parameters.c       = 0.54       ;   % add description here
+
+% rotor oscillator flow parameters
+RO_parameters.eps       = 1       ;   % amplitude of oscillation
+RO_parameters.omega     = 2*pi      ;   % pulsation of oscillation
+RO_parameters.amp_type  = 0           ;   % type of amplitude evolution: 0 => constant ; 1 => sinusoidal ; 2 => square
+RO_parameters.amp       = 1           ;   % amplitude of the stream function
+RO_parameters.amp_omega = 2*pi/10     ;   % amplitude pulsation
+RO_parameters.amp_phi   = 0*pi        ;   % amplitude initial phase
+
+% rotor oscillator generator options
+RO_generator_file   = '../INPUT/RO_interpolant_01' ;  % file where interpolant is read or written 
+RO_generator_save   = false  ;  % save or not RO interpolant
+RO_generator_load   = true   ;  % load or not RO interpolant
+
+% Particle type
+% -------------
+particle_type = 'passive';   % Choose 'fiber' or 'passive'
+l_Cauchy_Green = true ;   % Compute CG tensor if true otherwise only advect particles (no cluster)
+
+% Parameters for fiber particles
+% ------------------------------
+fiber_parameters.eps = 8    ;     % ellipse aspect ratio: epsilon =  b/a
+fiber_parameters.St  = 3.e-2;     % particle Stokes number
+fiber_parameters.Re  = 1.e-3;     % Reynolds number
+
+% Result file
+% -----------
+%result_file = 'Sphere_V_0_St005';
+result_file = 'Tracer_RO';
+%result_file = 'Ellipses_V_0_th_rdm_St_003_eps_8_steadyflow_backTEST';
+
+% Time info
+% ---------
+t_init = 0;          % Initial time
+t_fin = 120;          % Final time
+out_period = -1;     % Intermediate state output every out_period time steps
+                     % Put negative value for no intermediate output => only initial and final states
+
+DT = 1.e-1;          % RK4 time step
+
+% Initial conditions
+% ------------------
+x_min = -1 ; x_max = 1 ;   % x domain boundaries
+y_min = -2.5 ; y_max = 2.5 ;   % y domain boundaries
+dx = 0.01 ; dy = 0.01 ;   % Resolution
+
+init_at_rest = true  ;   % if false, start at local fluid velocity
+Vinit = 1;               % start at local fluid velocity times Vinit
+
+cluster_size = 1.e-5  ;   % Size of the cluster for computing flow map gradient
+
+% Figure info
+% -----------
+final_figure_plot = true;
+format = 'fig';
+visibility = 'on';
+l_export = true;
+resolution = 680;
+%ttl = 'Ellipses with St = 0.03 eps = 8 theta = rdm steady flow backward TEST';
+%ttl = 'Sphere with St = 0.05';
+ttl = 'Tracers RO flow';
 
 % ======================================================================================
 %                                      PROGRAM INIT
@@ -77,8 +155,8 @@ if( strcmp(particle_type, 'fiber') )
       switch flow_field
         case 'double_gyre'
           [X_dot_0, Y_dot_0]  = double_gyre_flow(t_init, [X_0 , Y_0], delta, DG_parameters);
-          X_dot_0 = init_coeff * X_dot_0;
-          Y_dot_0 = init_coeff * Y_dot_0;
+          X_dot_0 = Vinit * X_dot_0;
+          Y_dot_0 = Vinit * Y_dot_0;
         case 'rotor_oscillator'
           [X_dot_0, Y_dot_0]  = rotor_oscillator_flow(t_init, [X_0, Y_0], delta, Fx, Fy, RO_parameters);
       end
@@ -113,8 +191,8 @@ elseif( strcmp(particle_type, 'sphere') )
       switch flow_field
         case 'double_gyre'
           [X_dot_0, Y_dot_0]  = double_gyre_flow(t_init, [X_0 , Y_0], delta, DG_parameters);
-          X_dot_0 = init_coeff * X_dot_0;
-          Y_dot_0 = init_coeff * Y_dot_0;
+          X_dot_0 = Vinit * X_dot_0;
+          Y_dot_0 = Vinit * Y_dot_0;
         case 'rotor_oscillator'
           [X_dot_0, Y_dot_0]  = rotor_oscillator_flow(t_init, [X_0, Y_0], delta, Fx, Fy, RO_parameters);
           
@@ -174,7 +252,7 @@ end
 % -------------------------------
 [State_out, t_out] = RK4( State_init, t_init, t_fin, DT, RHS, out_period );
 
-fprintf('   --->   done in %5.2f min\n', toc(tic_id)/60)
+fprintf('   done in %5.2f min\n', toc(tic_id)/60)
 
 % ======================================================================================
 %                             CAUCHY-GREEN TENSOR INVARIANTS
@@ -277,7 +355,7 @@ end
 %                                       PLOT
 % ======================================================================================
 
-if( l_plot_ftle & l_Cauchy_Green )
+if( final_figure_plot & l_Cauchy_Green )
       
    fprintf('Plotting\n')
    

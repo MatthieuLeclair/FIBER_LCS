@@ -72,7 +72,4 @@ function [State_out, t_out] = RK4(State_init, t_init, t_fin, dt, RHS, out_period
       t_out(n_out) = t_cur;
    end
    
-   % New line
-   fprintf( '\n');
-   
 end
