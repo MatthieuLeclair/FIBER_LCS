@@ -91,7 +91,7 @@ if( strcmp(particle_type, 'fiber') )
           X_dot_0 = init_coeff * X_dot_0;
           Y_dot_0 = init_coeff * Y_dot_0;
         case 'rotor_oscillator'
-          [X_dot_0, Y_dot_0]  = rotor_oscillator_flow(t_init, [X_0, Y_0], delta, Fx, Fy, RO_parameters);
+          [X_dot_0, Y_dot_0]  = rotor_oscillator_flow(t_init, [X_0, Y_0], delta, Ux0, Uy0, RO_parameters);
       end
    end
 
@@ -150,35 +150,34 @@ tic_id = tic;
 % Determine flow field and RHS functions
 % --------------------------------------
 switch flow_field
-    case 'double_gyre'
-        switch particle_type
-            case 'passive'
-                flow_field_handle = @(t, XY) double_gyre_flow( t, XY, delta, DG_parameters );
-                RHS = @(t, State) RHS_passive( t, State, flow_field_handle );
-            case 'fiber'
-                flow_field_handle = @(t, XY) double_gyre_flow_and_grad( t, XY, delta, DG_parameters );
-                RHS = @(t, State) RHS_fiber( t, State, flow_field_handle, fiber_parameters );
-            case 'sphere'
-                flow_field_handle = @(t, XY) double_gyre_flow_and_grad( t, XY, delta, DG_parameters );
-                RHS = @(t, State) RHS_sphere( t, State, flow_field_handle, sphere_parameters );
-        end
-        
-    case 'rotor_oscillator'
-        switch particle_type
-            case 'passive'
-                flow_field_handle = @(t, XY) rotor_oscillator_flow( t, XY, delta, Fx, Fy, RO_parameters);
-                RHS = @(t, State) RHS_passive( t, State, flow_field_handle );
-            case 'fiber'
-                fprintf('ERROR: Only double gyre coded for fibers so far\n')
-                return
-            case 'sphere'
-                fprintf('ERROR: Only double gyre coded for spheres so far\n')
-                return
-        end
-        
-    otherwise
-        fprintf('ERROR: Only double gyre and rotor oscillator available\n')
+  case 'double_gyre'
+    switch particle_type
+      case 'passive'
+        flow_field_handle = @(t, XY) double_gyre_flow( t, XY, delta, DG_parameters );
+        RHS = @(t, State) RHS_passive( t, State, flow_field_handle );
+      case 'fiber'
+        flow_field_handle = @(t, XY) double_gyre_flow_and_grad( t, XY, delta, DG_parameters );
+        RHS = @(t, State) RHS_fiber( t, State, flow_field_handle, fiber_parameters );
+      case 'sphere'
+        flow_field_handle = @(t, XY) double_gyre_flow_and_grad( t, XY, delta, DG_parameters );
+        RHS = @(t, State) RHS_sphere( t, State, flow_field_handle, sphere_parameters );
+    end
+    
+  case 'rotor_oscillator'
+    switch particle_type
+      case 'passive'
+        flow_field_handle = @(t, XY) rotor_oscillator_flow( t, XY, delta, Ux0, Uy0, RO_parameters);
+        RHS = @(t, State) RHS_passive( t, State, flow_field_handle );
+      case 'fiber'
+        flow_field_handle = @(t, XY) rotor_oscillator_flow_and_grad( t, XY, delta, Ux0, Uy0, ...
+                                                          dUx0_dx, dUx0_dy, dUy0_dx, dUy0_dy, ...
+                                                          RO_parameters);
+        RHS = @(t, State) RHS_fiber( t, State, flow_field_handle, fiber_parameters );
         return
+      case 'sphere'
+        fprintf('ERROR: Only double gyre coded for spheres so far\n')
+        return
+    end
 end
 
 % Integrate particle trajectories
