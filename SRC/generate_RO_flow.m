@@ -1,10 +1,10 @@
-function [Fx Fy] = generate_RO_flow(param, file, l_load, l_save)
+function [Ux0 Uy0 varargout] = generate_RO_flow(param, file, l_load, l_save, l_grad)
 
    % Setup dimensions
    a = param.a; %radius in m
    h = param.h; %tank width in m - was 9.9cm
    c = param.c; %initial position of the rod/rotor on the c axis (y=0)
-
+   
    if( ~l_load )
       
       fprintf('\nComputing rotor oscillator analytical function on a grid\n')
@@ -13,16 +13,29 @@ function [Fx Fy] = generate_RO_flow(param, file, l_load, l_save)
       y_range = param.y_range;
       dx      = param.dx     ;
       dy      = param.dy     ;
+      dcl     = param.dcl    ;
 
       x_grid = x_range(1):dx:x_range(2);
       y_grid = y_range(1):dy:y_range(2);
 
-      [X,Y] = ndgrid(x_grid, y_grid);
+      [XG,YG] = ndgrid(x_grid, y_grid);
+      sz_grid = size(XG);
+      n_points = numel(XG);
+      XG = reshape(XG, n_points, 1);
+      YG = reshape(YG, n_points, 1);
+      if( l_grad )
+         X = [XG ; XG+dcl ; XG     ; XG-dcl ; XG    ];
+         Y = [YG ; YG     ; YG+dcl ; YG     ; YG-dcl];
+         n_points_tot = 5*n_points;
+      else
+         X = XG;
+         Y = YG;
+         n_points_tot = n_points;
+      end
 
-      %limits of integration
-      kmax=450;
-      kmin=10.^-8;%0.1;%
 
+      % term 1
+      % ------
       term1dX = - 0.5 * (exp(pi*Y) + 2*cos((pi*(c + X))/2).*exp((pi*Y)/2) + 1)           ...
                 .* ( ( pi*exp((pi*Y)/2) .* sin((pi*(c - X))/2) )                      ...
                      ./ ( exp(pi*Y) + 2*cos((pi*(c + X))/2) .* exp((pi*Y)/2) + 1 )    ...
@@ -41,70 +54,83 @@ function [Fx Fy] = generate_RO_flow(param, file, l_load, l_save)
 
 
       % term 2
-      Qfx = zeros(length(kmin),length(kmax));
-      Qfy = zeros(length(kmin),length(kmax));
-
-      ni = numel(x_grid);
-      nj = numel(y_grid);  
-      for i=1:ni
-         % monitor progress
-         fprintf( '\b\b\b\b\b\b\b\b%6.2f %%', i / ni * 100 );
-         for j = 1:nj
-            
-            x = x_grid(i);
-            y = y_grid(j);
-            
-            fdiffx = (@(k)cos(k*y).*...
-                      ((sinh(k*c).*(2*cosh(k*x) - 2*k.*cosh(k*x).*coth(k) + ...
-                                    2*k*x.*sinh(k*x)))./(2*k - sinh(2*k)) - ...
-                       (cosh(k*c).*(2*sinh(k*x) - 2*k.*sinh(k*x).*tanh(k) + ...
-                                    2*k*x.*cosh(k*x)))./(2*k + sinh(2*k))));
-
-            fdiffy = (@(k)k.*sin(k*y).*...
-                      ((2*cosh(c*k).*(x*sinh(k*x) - cosh(k*x).*tanh(k)))./...
-                       (2*k + sinh(2*k)) - ... 
-                       (2*sinh(c*k).*(x*cosh(k*x) - sinh(k*x).*coth(k)))./...
-                       (2*k - sinh(2*k))));
-            
-            Qfx(i,j)=quadgk(fdiffx,kmin,kmax,'WayPoints',0);
-            Qfy(i,j)=quadgk(fdiffy,kmin,kmax,'WayPoints',0);
-            
-         end
+      % ------
+      Qfx = zeros(n_points_tot);
+      Qfy = zeros(n_points_tot);
+      %limits of integration
+      kmax=450;
+      kmin=10.^-8;%0.1;%
+      for k = 1:n_points_tot
+         fprintf( '\b\b\b\b\b\b\b\b%6.2f %%', k / n_points_tot * 100 );
+         x = X(k);
+         y = Y(k);
+         fdiffx = @(r) cos(r*y).*...
+                  ((sinh(r*c).*(2*cosh(r*x) - 2*r.*cosh(r*x).*coth(r) + ...
+                                2*r*x.*sinh(r*x)))./(2*r - sinh(2*r)) - ...
+                   (cosh(r*c).*(2*sinh(r*x) - 2*r.*sinh(r*x).*tanh(r) + ...
+                                2*r*x.*cosh(r*x)))./(2*r + sinh(2*r)));
+         fdiffy =  @(r)r.*sin(r*y).*...
+                   ((2*cosh(c*r).*(x*sinh(r*x) - cosh(r*x).*tanh(r)))./...
+                    (2*r + sinh(2*r)) - ... 
+                    (2*sinh(c*r).*(x*cosh(r*x) - sinh(r*x).*coth(r)))./...
+                    (2*r - sinh(2*r)));
+         Qfx(k)=quadgk(fdiffx,kmin,kmax,'WayPoints',0);
+         Qfy(k)=quadgk(fdiffy,kmin,kmax,'WayPoints',0);
       end
       
       psidx=term1dX + Qfx;
-      [m, n] = find(isinf(psidx));
-      psidx(m,n) = 0;
-      clear m n
-      [m, n] = find(isnan(psidx));
-      psidx(m,n) = 0;
-      clear m n
+      psidx(isinf(psidx)|isnan(psidx)) = 0;
 
       psidy=term1dY+Qfy;
-      [m, n] = find(isinf(psidy));
-      psidy(m,n) = 0;
-      clear m n
-      [m, n] = find(isnan(psidy));
-      psidy(m,n) = 0;
-      clear m n
+      psidy(isinf(psidy)|isnan(psidy)) = 0;
 
-      Fx = griddedInterpolant(X, Y, psidx, 'cubic'); 
-      Fy = griddedInterpolant(X, Y, psidy, 'cubic');
+      % Create interpolants
+      % ------------------- 
+      Ux0 = griddedInterpolant(XG, YG, reshape(-psidy(1:n_points),sz_grid), 'cubic');
+      Uy0 = griddedInterpolant(XG, YG, reshape( psidx(1:n_points),sz_grid), 'cubic');
+      if( l_grad )
+         % dUx0_dx
+         field_tmp = reshape( psidy(3*n_points+1:4*n_points) - psidy(1*n_points+1:2*n_points) , sz_grid ) / dcl;
+         varargout{1} = griddedInterpolant(XG, YG, reshape(field_tmp,sz_grid), 'cubic');
+         % dUx0_dy
+         field_tmp = reshape( psidy(4*n_points+1:5*n_points) - psidy(2*n_points+1:3*n_points) , sz_grid ) / dcl;
+         varargout{2} = griddedInterpolant(XG, YG, reshape(field_tmp,sz_grid), 'cubic');
+         % dUy0_dx
+         field_tmp = reshape( psidx(1*n_points+1:2*n_points) - psidx(3*n_points+1:4*n_points) , sz_grid ) / dcl;
+         varargout{3} = griddedInterpolant(XG, YG, reshape(field_tmp,sz_grid), 'cubic');
+         % dUy0_dy
+         field_tmp = reshape( psidx(2*n_points+1:3*n_points) - psidx(4*n_points+1:5*n_points) , sz_grid ) / dcl;
+         varargout{4} = griddedInterpolant(XG, YG, reshape(field_tmp,sz_grid), 'cubic');
+         
+         clear field_tmp
+      end
       
       fprintf('\n')
       
    else
       
       save_obj = matfile(file, 'Writable', false);
-      Fx = save_obj.Fx;
-      Fy = save_obj.Fy;
+      Ux0 = save_obj.Ux0;
+      Uy0 = save_obj.Uy0;
+      if( l_grad )
+         varargout{1} = save_obj.dUx0_dx;
+         varargout{2} = save_obj.dUx0_dy;
+         varargout{3} = save_obj.dUy0_dx;
+         varargout{4} = save_obj.dUy0_dy;
+      end
       
    end
 
    if( l_save )
       save_obj = matfile(file, 'Writable', true);
-      save_obj.Fx = Fx;
-      save_obj.Fy = Fy;
+      save_obj.Ux0 = Ux0;
+      save_obj.Uy0 = Uy0;
+      if( l_grad )
+         save_obj.dUx0_dx = dUx0_dx;
+         save_obj.dUx0_dy = dUx0_dy;
+         save_obj.dUy0_dx = dUy0_dx;
+         save_obj.dUy0_dy = dUy0_dy;
+      end
    end
 
 end

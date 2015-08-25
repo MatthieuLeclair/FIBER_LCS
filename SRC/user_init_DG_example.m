@@ -11,8 +11,9 @@ DG_parameters.omega = 2*pi/10 ;  % frequency of gyre oscillation
 % rotor oscillator generator parameters
 RO_generator_parameters.x_range = [-1 1]     ;   % add description here
 RO_generator_parameters.y_range = [-2.5 2.5] ;   % add description here
-RO_generator_parameters.dx      = 0.01       ;   % add description here
-RO_generator_parameters.dy      = 0.01       ;   % add description here
+RO_generator_parameters.dx      = 1.e-2      ;   % add description here
+RO_generator_parameters.dy      = 1.e-2      ;   % add description here
+RO_generator_parameters.dcl     = 1.e-3      ;   % add description here
 RO_generator_parameters.a       = 0.003      ;   % add description here
 RO_generator_parameters.h       = 0.01       ;   % add description here
 RO_generator_parameters.c       = 0.54       ;   % add description here

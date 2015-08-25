@@ -14,12 +14,6 @@ run(init_file);
 
 fprintf('Initializing\n')
 
-% Create rotor oscillator function if needed
-% ==========================================
-if strcmp(flow_field, 'rotor_oscillator')
-   [Fx Fy] = generate_RO_flow(RO_generator_parameters, RO_generator_file, RO_generator_load, RO_generator_save);
-end
-
 % Program init checks
 % ===================
 % Check flow field and particle type
@@ -37,6 +31,22 @@ end
 % Forward or backward integration
 % -------------------------------
 delta = sign(t_fin - t_init);
+
+% Create rotor oscillator function if needed
+% ==========================================
+if strcmp(flow_field, 'rotor_oscillator')
+   l_grad = strcmp(particle_type, 'fiber');
+   if( l_grad )
+      [ Ux0, Uy0 ] = generate_RO_flow( RO_generator_parameters, ...
+                                       RO_generator_file, RO_generator_load, RO_generator_save, ...
+                                       l_grad );
+   else
+      [ Ux0, Uy0, dUx0_dx, dUx0_dy, dUy0_dx, dUy0_dy ] = ...
+          generate_RO_flow( RO_generator_parameters, ...
+                            RO_generator_file, RO_generator_load, RO_generator_save, ...
+                            l_grad );
+   end
+end
 
 % Initial conditions
 % ==================

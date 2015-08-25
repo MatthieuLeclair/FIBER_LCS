@@ -1,7 +1,7 @@
-function [Ux, Uy] = rotor_oscillator_flow(t, XY, delta, Fx, Fy, param)
+function [Ux, Uy] = rotor_oscillator_flow(t, XY, delta, Ux0, Uy0, param)
    
-   Ux = - delta * Fy( XY(:,1) , XY(:,2) - param.eps * sin(param.omega*t) );
-   Uy =   delta * Fx( XY(:,1) , XY(:,2) - param.eps * sin(param.omega*t) );
+   Ux = delta * Ux0( XY(:,1) , XY(:,2) - param.eps * sin(param.omega*t) );
+   Uy = delta * Uy0( XY(:,1) , XY(:,2) - param.eps * sin(param.omega*t) );
    
    switch param.amp_type
      case 0   % constant amplitude

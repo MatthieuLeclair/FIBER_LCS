@@ -40,11 +40,11 @@ du(:,4) = duy_dx;
 rotation = 1/2*(duy_dx - dux_dy);
 
 % fluid accelaration: Du/Dt = du/dt + (u.nabla)u
-dudt(:,1) = C*cos(pi*XY(:,2))*cos(omega*t).*cos(pi*f).*(XY(:,1).^2 - 2*XY(:,1));
+dux_dt= C*cos(pi*XY(:,2))*cos(omega*t).*cos(pi*f).*(XY(:,1).^2 - 2*XY(:,1));
 %dudt(:,2) = C*sin(pi*XY(:,2))*cos(omega*t).*( - (XY(:,1).^2 - 2*XY(:,1)).*sin(pi*f).*(1 + 2*e*(XY(:,1)-2)) + 2/pi.*cos(pi*f).*(XY(:,1)-2) );
-dudt(:,2) = C*sin(pi*XY(:,2))*cos(omega*t).*( (XY(:,1).^2 - 2*XY(:,1)).*sin(pi*f).*(1 + 2*e*sin(omega*t).*(XY(:,1)-1)) - 2/pi.*cos(pi*f).*(XY(:,1) - 1) );
+duy_dt = C*sin(pi*XY(:,2))*cos(omega*t).*( (XY(:,1).^2 - 2*XY(:,1)).*sin(pi*f).*(1 + 2*e*sin(omega*t).*(XY(:,1)-1)) - 2/pi.*cos(pi*f).*(XY(:,1) - 1) );
 
-DUxDt = dudt(:,1) + Ux.*dux_dx + Uy.*dux_dy;
-DUyDt = dudt(:,2) + Ux.*duy_dx + Uy.*duy_dy;
+DUxDt = dux_dt + Ux.*dux_dx + Uy.*dux_dy;
+DUyDt = duy_dt + Ux.*duy_dx + Uy.*duy_dy;
 
 end
