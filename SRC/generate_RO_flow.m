@@ -112,22 +112,22 @@ function [Ux0 Uy0 varargout] = generate_RO_flow(param, file, l_load, l_save, l_g
       XG = reshape(XG, sz_grid);
       YG = reshape(YG, sz_grid);
       
-      Ux0 = griddedInterpolant(XG, YG, reshape(-psidy(1:n_points),sz_grid), 'cubic');
-      Uy0 = griddedInterpolant(XG, YG, reshape( psidx(1:n_points),sz_grid), 'cubic');
+      Ux0 = griddedInterpolant(XG, YG, reshape(-psidy(1:n_points), sz_grid), 'cubic');
+      Uy0 = griddedInterpolant(XG, YG, reshape( psidx(1:n_points), sz_grid), 'cubic');
       
       if( l_grad )
          % dUx0_dx
-         field_tmp = reshape( psidy(3*n_points+1:4*n_points) - psidy(1*n_points+1:2*n_points) , sz_grid ) / dcl;
-         varargout{1} = griddedInterpolant(XG, YG, reshape(field_tmp,sz_grid), 'cubic');
+         field_tmp = ( psidy(3*n_points+1:4*n_points) - psidy(1*n_points+1:2*n_points) ) / dcl;
+         varargout{1} = griddedInterpolant(XG, YG, reshape(field_tmp, sz_grid), 'cubic');
          % dUx0_dy
-         field_tmp = reshape( psidy(4*n_points+1:5*n_points) - psidy(2*n_points+1:3*n_points) , sz_grid ) / dcl;
-         varargout{2} = griddedInterpolant(XG, YG, reshape(field_tmp,sz_grid), 'cubic');
+         field_tmp = ( psidy(4*n_points+1:5*n_points) - psidy(2*n_points+1:3*n_points) ) / dcl;
+         varargout{2} = griddedInterpolant(XG, YG, reshape(field_tmp, sz_grid), 'cubic');
          % dUy0_dx
-         field_tmp = reshape( psidx(1*n_points+1:2*n_points) - psidx(3*n_points+1:4*n_points) , sz_grid ) / dcl;
-         varargout{3} = griddedInterpolant(XG, YG, reshape(field_tmp,sz_grid), 'cubic');
+         field_tmp = ( psidx(1*n_points+1:2*n_points) - psidx(3*n_points+1:4*n_points) ) / dcl;
+         varargout{3} = griddedInterpolant(XG, YG, reshape(field_tmp, sz_grid), 'cubic');
          % dUy0_dy
-         field_tmp = reshape( psidx(2*n_points+1:3*n_points) - psidx(4*n_points+1:5*n_points) , sz_grid ) / dcl;
-         varargout{4} = griddedInterpolant(XG, YG, reshape(field_tmp,sz_grid), 'cubic');
+         field_tmp = ( psidx(2*n_points+1:3*n_points) - psidx(4*n_points+1:5*n_points) ) / dcl;
+         varargout{4} = griddedInterpolant(XG, YG, reshape(field_tmp, sz_grid), 'cubic');
          
          clear field_tmp
       end
