@@ -24,7 +24,7 @@ function F = RHS_fiber(t, State, flow_field, param)
    pre_fact_2 = 1/2*(1-param.eps^2)/(1+param.eps^2);
    
    % Flow properties
-   [Ux, Uy, DUx_Dt, DUy_Dt, dux_dx, dux_dy, duy_dx, duy_dy, rotation] = flow_field(t, [X,Y]);
+   [Ux, Uy, DUx_Dt, DUy_Dt, dUx_dx, dUx_dy, dUy_dx, dUy_dy, rotation] = flow_field(t, [X,Y]);
    
    % Right Hand Side
    COS = cos(Theta);
