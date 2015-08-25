@@ -1,4 +1,4 @@
-function [Ux, Uy, DUx_Dt, DUy_Dt, dux_dx, dux_dy, duy_dx, duy_dy, rotation] = double_gyre_flow_and_grad( t, XY, delta, param )
+function [Ux, Uy, DUx_Dt, DUy_Dt, dUx_dx, dUx_dy, dUy_dx, dUy_dy, rotation] = double_gyre_flow_and_grad( t, XY, delta, param )
 
 % XY is the field with the x and y coordinates of points where u and v need
 % to be determined
@@ -32,7 +32,7 @@ dUy_dy = - dUx_dx;
 dUx_dy = delta * (pi^2*A*sin(pi*f).*sin(pi*XY(:,2)));
 dUy_dx = delta * (pi*A*sin(pi*XY(:,2)).*( -pi*sin(pi*f).*dfdx.^2 + cos(pi*f).*dfdx2 ));
 
-rotation = 1/2*(duy_dx - dux_dy);
+rotation = 1/2*(dUy_dx - dUx_dy);
 
 % fluid accelaration: Du/Dt = du/dt + (u.nabla)u
 dUx_dt = C*cos(pi*XY(:,2))*cos(omega*t).*cos(pi*f).*(XY(:,1).^2 - 2*XY(:,1));

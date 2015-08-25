@@ -1,4 +1,4 @@
-function [Ux, Uy, DUxDt, DUyDt, dUx_dx, dUx_dy, dUy_dx, dUy_dy, rotation] = rotor_oscillator_flow_and_grad(t, XY, delta, Ux0, Uy0, dUx0_dx, dUx0_dy, dUy0_dx, dUy0_dy, param)
+function [Ux, Uy, DUx_Dt, DUy_Dt, dUx_dx, dUx_dy, dUy_dx, dUy_dy, rotation] = rotor_oscillator_flow_and_grad(t, XY, delta, Ux0, Uy0, dUx0_dx, dUx0_dy, dUy0_dx, dUy0_dy, param)
    
    % Amplitude
    switch param.amp_type
@@ -35,14 +35,14 @@ function [Ux, Uy, DUxDt, DUyDt, dUx_dx, dUx_dy, dUy_dx, dUy_dy, rotation] = roto
    % Multiply Velocity and Velocity spatial gradients by amplitude and time direction
    Ux     = delta * amp * Ux    ;
    Uy     = delta * amp * Uy    ;
-   dUx_dx = delta * amp * dUx_dx; 
-   dUy_dy = delta * amp * dUy_dy; 
-   dUx_dy = delta * amp * dUx_dy; 
-   dUy_dx = delta * amp * dUy_dx; 
+   dUx_dx = delta * amp * dUx_dx;
+   dUy_dy = delta * amp * dUy_dy;
+   dUx_dy = delta * amp * dUx_dy;
+   dUy_dx = delta * amp * dUy_dx;
    
    % Compute "full" velocity time derivative
-   DUxDt = dUx_dt + Ux.*dUx_dx + Uy.*dUx_dy;
-   DUyDt = dUy_dt + Ux.*dUy_dx + Uy.*dUy_dy;
+   DUx_Dt = dUx_dt + Ux.*dUx_dx + Uy.*dUx_dy;
+   DUy_Dt = dUy_dt + Ux.*dUy_dx + Uy.*dUy_dy;
    
    % Compute rotation
    rotation = 1/2 * ( dUy_dx - dUx_dy );
