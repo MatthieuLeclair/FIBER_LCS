@@ -31,6 +31,7 @@ RO_generator_file     = '../INPUT/RO_interpolant_01' ;  % file where interpolant
 RO_generator_save     = false ;  % save or not RO interpolant
 RO_generator_load     = true  ;  % load or not RO interpolant
 RO_generator_parallel = false ;  % Run RO generator in parallel
+RO_generator_n_proc   = 16    ;  % Number of workers used in parfor if parallel is true
 
 % Particle type
 % -------------

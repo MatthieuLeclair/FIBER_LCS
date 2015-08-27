@@ -1,4 +1,4 @@
-function [Ux0 Uy0 varargout] = generate_RO_flow(param, file, l_load, l_save, l_grad, l_parallel)
+function [Ux0 Uy0 varargout] = generate_RO_flow(param, file, l_load, l_save, l_grad, l_parallel, n_proc)
  
    if( l_load )
       
@@ -84,7 +84,7 @@ function [Ux0 Uy0 varargout] = generate_RO_flow(param, file, l_load, l_save, l_g
       r_max = 450    ;
       
       if( l_parallel )
-         pp = parpool;
+         pp = parpool(n_proc);
          parfor k = 1:n_points_tot
             x = X(k);
             y = Y(k);
