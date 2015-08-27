@@ -27,9 +27,10 @@ RO_parameters.amp_omega = 2*pi/10 ;   % amplitude pulsation
 RO_parameters.amp_phi   = 0*pi    ;   % amplitude initial phase
 
 % rotor oscillator generator options
-RO_generator_file   = '../INPUT/RO_interpolant_01' ;  % file where interpolant is read or written 
-RO_generator_save   = false  ;  % save or not RO interpolant
-RO_generator_load   = true   ;  % load or not RO interpolant
+RO_generator_file     = '../INPUT/RO_interpolant_01' ;  % file where interpolant is read or written 
+RO_generator_save     = false ;  % save or not RO interpolant
+RO_generator_load     = true  ;  % load or not RO interpolant
+RO_generator_parallel = false ;  % Run RO generator in parallel
 
 % Particle type
 % -------------

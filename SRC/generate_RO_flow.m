@@ -1,4 +1,4 @@
-function [Ux0 Uy0 varargout] = generate_RO_flow(param, file, l_load, l_save, l_grad)
+function [Ux0 Uy0 varargout] = generate_RO_flow(param, file, l_load, l_save, l_grad, l_parallel)
  
    if( l_load )
       
@@ -83,18 +83,28 @@ function [Ux0 Uy0 varargout] = generate_RO_flow(param, file, l_load, l_save, l_g
       r_min = 10.^-8 ;
       r_max = 450    ;
       
-      pp = parpool(16);
-      parfor k = 1:n_points_tot
-         fprintf( '\b\b\b\b\b\b\b\b%6.2f %%', k / n_points_tot * 100 );
-         x = X(k);
-         y = Y(k);
-         fdiff_complex = @(r) fdiff(r,c,x,y);
-         dpsi_comp = quadgk(fdiff_complex, r_min, r_max, 'WayPoints', 0);
-         dpsi_dx(k) = dpsi_dx(k) + real(dpsi_comp);
-         dpsi_dy(k) = dpsi_dy(k) + imag(dpsi_comp);
-         
+      if( l_parallel )
+         pp = parpool;
+         parfor k = 1:n_points_tot
+            x = X(k);
+            y = Y(k);
+            fdiff_complex = @(r) fdiff(r,c,x,y);
+            dpsi_comp = quadgk(fdiff_complex, r_min, r_max, 'WayPoints', 0);
+            dpsi_dx(k) = dpsi_dx(k) + real(dpsi_comp);
+            dpsi_dy(k) = dpsi_dy(k) + imag(dpsi_comp);
+         end
+         delete(pp)
+      else
+         for k = 1:n_points_tot
+            fprintf( '\b\b\b\b\b\b\b\b%6.2f %%', k / n_points_tot * 100 );
+            x = X(k);
+            y = Y(k);
+            fdiff_complex = @(r) fdiff(r,c,x,y);
+            dpsi_comp = quadgk(fdiff_complex, r_min, r_max, 'WayPoints', 0);
+            dpsi_dx(k) = dpsi_dx(k) + real(dpsi_comp);
+            dpsi_dy(k) = dpsi_dy(k) + imag(dpsi_comp);
+         end
       end
-      delete(pp)
       
       ux = -dpsi_dy; clear dpsi_dy;
       uy =  dpsi_dx; clear dpsi_dx;
