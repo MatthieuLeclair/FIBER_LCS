@@ -21,9 +21,9 @@ function [Ux0 Uy0 varargout] = generate_RO_flow(param, file, l_load, l_save, l_g
       % ========================
       
       if( l_grad )
-         fprintf('\nComputing rotor oscillator analytical function and gradients on a grid\n')
+         fprintf('Computing rotor oscillator analytical function and gradients on a grid\n')
       else
-         fprintf('\nComputing rotor oscillator analytical function on a grid\n')
+         fprintf('Computing rotor oscillator analytical function on a grid\n')
       end
       
       % RO flow parameters
@@ -50,8 +50,8 @@ function [Ux0 Uy0 varargout] = generate_RO_flow(param, file, l_load, l_save, l_g
       YG = reshape(YG, n_points, 1);
       
       if( l_grad )
-         X = [XG ; XG+dcl ; XG     ; XG-dcl ; XG    ];
-         Y = [YG ; YG     ; YG+dcl ; YG     ; YG-dcl];
+         X = [XG ; XG+dcl/2 ; XG       ; XG-dcl/2 ; XG      ];
+         Y = [YG ; YG       ; YG+dcl/2 ; YG       ; YG-dcl/2];
          n_points_tot = 5*n_points;
       else
          X = XG;
@@ -61,75 +61,67 @@ function [Ux0 Uy0 varargout] = generate_RO_flow(param, file, l_load, l_save, l_g
 
       % Compute term 1
       % --------------
-      psidx = - 0.5 * (exp(pi*Y) + 2*cos((pi*(c + X))/2).*exp((pi*Y)/2) + 1)        ...
-              .* ( ( pi*exp((pi*Y)/2) .* sin((pi*(c - X))/2) )                      ...
-                   ./ ( exp(pi*Y) + 2*cos((pi*(c + X))/2) .* exp((pi*Y)/2) + 1 )    ...
-                   - ( pi*sin((pi*(c + X))/2) .* exp((pi*Y)/2)                      ...
-                       .*(exp(pi*Y) - 2*exp((pi*Y)/2).*cos((pi*(c - X))/2) + 1) )   ...
-                   ./ ( exp(pi*Y) + 2*cos((pi*(c + X))/2).*exp((pi*Y)/2) + 1 ).^2 ) ...
-              ./ ( exp(pi*Y) - 2*exp((pi*Y)/2).*cos((pi*(c - X))/2) + 1 );
+      dpsi_dx = - 0.5 * (exp(pi*Y) + 2*cos((pi*(c + X))/2).*exp((pi*Y)/2) + 1)        ...
+                .* ( ( pi*exp((pi*Y)/2) .* sin((pi*(c - X))/2) )                      ...
+                     ./ ( exp(pi*Y) + 2*cos((pi*(c + X))/2) .* exp((pi*Y)/2) + 1 )    ...
+                     - ( pi*sin((pi*(c + X))/2) .* exp((pi*Y)/2)                      ...
+                         .*(exp(pi*Y) - 2*exp((pi*Y)/2).*cos((pi*(c - X))/2) + 1) )   ...
+                     ./ ( exp(pi*Y) + 2*cos((pi*(c + X))/2).*exp((pi*Y)/2) + 1 ).^2 ) ...
+                ./ ( exp(pi*Y) - 2*exp((pi*Y)/2).*cos((pi*(c - X))/2) + 1 );
 
-      psidy = 0.5 * ( exp(pi*Y) + 2*cos((pi*(c + X))/2).*exp((pi*Y)/2) + 1 )        ...
-              .* ( ( pi*exp(pi*Y) - pi*exp((pi*Y)/2).*cos((pi*(c - X))/2) )         ...
-                   ./ ( exp(pi*Y) + 2*cos((pi*(c + X))/2).*exp((pi*Y)/2) + 1 )      ...
-                   - ( ( pi*exp(pi*Y) + pi*cos((pi*(c + X))/2).*exp((pi*Y)/2) )     ...
-                       .* ( exp(pi*Y) - 2*exp((pi*Y)/2).*cos((pi*(c - X))/2) + 1) ) ...
-                   ./ ( exp(pi*Y) + 2*cos((pi*(c + X))/2).*exp((pi*Y)/2) + 1 ).^2 ) ...
-              ./ ( exp(pi*Y) - 2*exp((pi*Y)/2).*cos((pi*(c - X))/2) + 1 );
+      dpsi_dy = 0.5 * ( exp(pi*Y) + 2*cos((pi*(c + X))/2).*exp((pi*Y)/2) + 1 )        ...
+                .* ( ( pi*exp(pi*Y) - pi*exp((pi*Y)/2).*cos((pi*(c - X))/2) )         ...
+                     ./ ( exp(pi*Y) + 2*cos((pi*(c + X))/2).*exp((pi*Y)/2) + 1 )      ...
+                     - ( ( pi*exp(pi*Y) + pi*cos((pi*(c + X))/2).*exp((pi*Y)/2) )     ...
+                         .* ( exp(pi*Y) - 2*exp((pi*Y)/2).*cos((pi*(c - X))/2) + 1) ) ...
+                     ./ ( exp(pi*Y) + 2*cos((pi*(c + X))/2).*exp((pi*Y)/2) + 1 ).^2 ) ...
+                ./ ( exp(pi*Y) - 2*exp((pi*Y)/2).*cos((pi*(c - X))/2) + 1 );
 
 
       % Compute term 2
       % --------------
-      Qfx = zeros(n_points_tot,1);
-      Qfy = zeros(n_points_tot,1);
-      %limits of integration
-      kmax=450;
-      kmin=10.^-8;%0.1;%
-      for k = 1:n_points_tot
+      r_min = 10.^-8 ;
+      r_max = 450    ;
+      
+      pp = parpool(16);
+      parfor k = 1:n_points_tot
          fprintf( '\b\b\b\b\b\b\b\b%6.2f %%', k / n_points_tot * 100 );
          x = X(k);
          y = Y(k);
-         fdiffx = @(r) cos(r*y).*...
-                  ((sinh(r*c).*(2*cosh(r*x) - 2*r.*cosh(r*x).*coth(r) + ...
-                                2*r*x.*sinh(r*x)))./(2*r - sinh(2*r)) - ...
-                   (cosh(r*c).*(2*sinh(r*x) - 2*r.*sinh(r*x).*tanh(r) + ...
-                                2*r*x.*cosh(r*x)))./(2*r + sinh(2*r)));
-         fdiffy =  @(r)r.*sin(r*y).*...
-                   ((2*cosh(c*r).*(x*sinh(r*x) - cosh(r*x).*tanh(r)))./...
-                    (2*r + sinh(2*r)) - ... 
-                    (2*sinh(c*r).*(x*cosh(r*x) - sinh(r*x).*coth(r)))./...
-                    (2*r - sinh(2*r)));
+         fdiff_complex = @(r) fdiff(r,c,x,y);
+         dpsi_comp = quadgk(fdiff_complex, r_min, r_max, 'WayPoints', 0);
+         dpsi_dx(k) = dpsi_dx(k) + real(dpsi_comp);
+         dpsi_dy(k) = dpsi_dy(k) + imag(dpsi_comp);
          
-         psidx(k) = psidx(k) + quadgk(fdiffx,kmin,kmax,'WayPoints',0);
-         psidy(k) = psidy(k) + quadgk(fdiffy,kmin,kmax,'WayPoints',0);
       end
+      delete(pp)
       
-      % psidx(isinf(psidx)|isnan(psidx)) = 0;
-      % psidy(isinf(psidy)|isnan(psidy)) = 0;
+      ux = -dpsi_dy; clear dpsi_dy;
+      uy =  dpsi_dx; clear dpsi_dx;
 
       % Create interpolants
       % -------------------
       XG = reshape(XG, sz_grid);
       YG = reshape(YG, sz_grid);
       
-      Ux0 = griddedInterpolant(XG, YG, reshape(-psidy(1:n_points), sz_grid), 'cubic');
-      Uy0 = griddedInterpolant(XG, YG, reshape( psidx(1:n_points), sz_grid), 'cubic');
+      Ux0 = griddedInterpolant(XG, YG, reshape(ux(1:n_points), sz_grid), 'cubic');
+      Uy0 = griddedInterpolant(XG, YG, reshape(uy(1:n_points), sz_grid), 'cubic');
       
       if( l_grad )
          % dUx0_dx
-         field_tmp = ( psidy(3*n_points+1:4*n_points) - psidy(1*n_points+1:2*n_points) ) / dcl;
+         field_tmp = ( ux(1*n_points+1:2*n_points) - ux(3*n_points+1:4*n_points) ) / dcl;
          varargout{1} = griddedInterpolant(XG, YG, reshape(field_tmp, sz_grid), 'cubic');
          % dUx0_dy
-         field_tmp = ( psidy(4*n_points+1:5*n_points) - psidy(2*n_points+1:3*n_points) ) / dcl;
+         field_tmp = ( ux(2*n_points+1:3*n_points) - ux(4*n_points+1:5*n_points) ) / dcl;
          varargout{2} = griddedInterpolant(XG, YG, reshape(field_tmp, sz_grid), 'cubic');
          % dUy0_dx
-         field_tmp = ( psidx(1*n_points+1:2*n_points) - psidx(3*n_points+1:4*n_points) ) / dcl;
+         field_tmp = ( uy(1*n_points+1:2*n_points) - uy(3*n_points+1:4*n_points) ) / dcl;
          varargout{3} = griddedInterpolant(XG, YG, reshape(field_tmp, sz_grid), 'cubic');
          % dUy0_dy
-         field_tmp = ( psidx(2*n_points+1:3*n_points) - psidx(4*n_points+1:5*n_points) ) / dcl;
+         field_tmp = ( uy(2*n_points+1:3*n_points) - uy(4*n_points+1:5*n_points) ) / dcl;
          varargout{4} = griddedInterpolant(XG, YG, reshape(field_tmp, sz_grid), 'cubic');
          
-         clear field_tmp
+         clear field_tmp ux uy
       end
       
       fprintf('\n')

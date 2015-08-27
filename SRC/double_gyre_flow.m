@@ -1,8 +1,7 @@
-function [Ux, Uy, DUxDt, DUyDt, du, rotation] = double_gyre_flow( t, XY, delta, param )
+function [Ux, Uy] = double_gyre_flow( t, XY, delta, param )
 
 % XY is the field with the x and y coordinates of points where u and v need
 % to be determined
-
 
 % Parameters
 A     = param.A    ;    % Stream function amplitude
