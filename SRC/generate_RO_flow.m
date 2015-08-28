@@ -90,10 +90,10 @@ function [Ux0 Uy0 varargout] = generate_RO_flow(param, file, l_load, l_save, l_g
       else
          for k = 1:n_points_tot
             fprintf( '\b\b\b\b\b\b\b\b%6.2f %%', k / n_points_tot * 100 );
-            fdiff_complex = @(r) fdiff(r,c,X(k),Y(k));
-            dpsi_comp = quadgk(fdiff_complex, r_min, r_max, 'WayPoints', 0);
-            dpsi_dx(k) = dpsi_dx(k) + 2 * real(dpsi_comp);
-            dpsi_dy(k) = dpsi_dy(k) + 2 * imag(dpsi_comp);
+            f = @(r) fdiff_x(r,c,X(k),Y(k));
+            dpsi_dx(k) = dpsi_dx(k) + 2 * quadgk(f, r_min, r_max, 'WayPoints', 0);
+            f = @(r) fdiff_y(r,c,X(k),Y(k));
+            dpsi_dy(k) = dpsi_dy(k) + 2 * quadgk(f, r_min, r_max, 'WayPoints', 0);
          end
       end
       
