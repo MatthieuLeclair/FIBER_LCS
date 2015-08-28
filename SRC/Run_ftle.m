@@ -124,7 +124,7 @@ elseif( strcmp(particle_type, 'sphere') )
         case 'double_gyre'
           [X_dot_0, Y_dot_0] = double_gyre_flow(t_init, [X_0 , Y_0], delta, DG_parameters);
         case 'rotor_oscillator'
-          [X_dot_0, Y_dot_0] = rotor_oscillator_flow(t_init, [X_0, Y_0], delta, Fx, Fy, RO_parameters);
+          [X_dot_0, Y_dot_0] = rotor_oscillator_flow(t_init, [X_0, Y_0], delta, Ux0, Uy0, RO_parameters);
       end
       X_dot_0 = init_coeff * X_dot_0;
       Y_dot_0 = init_coeff * Y_dot_0;

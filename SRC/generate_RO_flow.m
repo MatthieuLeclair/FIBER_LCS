@@ -61,22 +61,17 @@ function [Ux0 Uy0 varargout] = generate_RO_flow(param, file, l_load, l_save, l_g
 
       % Compute term 1
       % --------------
-      dpsi_dx = - 0.5 * (exp(pi*Y) + 2*cos((pi*(c + X))/2).*exp((pi*Y)/2) + 1)        ...
-                .* ( ( pi*exp((pi*Y)/2) .* sin((pi*(c - X))/2) )                      ...
-                     ./ ( exp(pi*Y) + 2*cos((pi*(c + X))/2) .* exp((pi*Y)/2) + 1 )    ...
-                     - ( pi*sin((pi*(c + X))/2) .* exp((pi*Y)/2)                      ...
-                         .*(exp(pi*Y) - 2*exp((pi*Y)/2).*cos((pi*(c - X))/2) + 1) )   ...
-                     ./ ( exp(pi*Y) + 2*cos((pi*(c + X))/2).*exp((pi*Y)/2) + 1 ).^2 ) ...
-                ./ ( exp(pi*Y) - 2*exp((pi*Y)/2).*cos((pi*(c - X))/2) + 1 );
-
-      dpsi_dy = 0.5 * ( exp(pi*Y) + 2*cos((pi*(c + X))/2).*exp((pi*Y)/2) + 1 )        ...
-                .* ( ( pi*exp(pi*Y) - pi*exp((pi*Y)/2).*cos((pi*(c - X))/2) )         ...
-                     ./ ( exp(pi*Y) + 2*cos((pi*(c + X))/2).*exp((pi*Y)/2) + 1 )      ...
-                     - ( ( pi*exp(pi*Y) + pi*cos((pi*(c + X))/2).*exp((pi*Y)/2) )     ...
-                         .* ( exp(pi*Y) - 2*exp((pi*Y)/2).*cos((pi*(c - X))/2) + 1) ) ...
-                     ./ ( exp(pi*Y) + 2*cos((pi*(c + X))/2).*exp((pi*Y)/2) + 1 ).^2 ) ...
-                ./ ( exp(pi*Y) - 2*exp((pi*Y)/2).*cos((pi*(c - X))/2) + 1 );
-
+      ey  = exp(pi  *Y) ;
+      ey2 = exp(pi/2*Y) ;
+      cp = cos(pi/2*(X+c)) ; cm = cos(pi/2*(X-c)) ;
+      sp = sin(pi/2*(X+c)) ; sm = sin(pi/2*(X-c)) ;
+      U_inv = pi/2*ey2 ./ (1 - 2*ey2.*cm + ey);
+      V_inv = pi/2*ey2 ./ (1 + 2*ey2.*cp + ey);
+      
+      dpsi_dx =      sm  .* U_inv +      sp  .* V_inv;
+      dpsi_dy = (ey2-cm) .* U_inv - (ey2+cp) .* V_inv;
+      
+      clear ey ey2 cp cm sp sm U_inv V_inv
 
       % Compute term 2
       % --------------
@@ -88,8 +83,8 @@ function [Ux0 Uy0 varargout] = generate_RO_flow(param, file, l_load, l_save, l_g
          parfor k = 1:n_points_tot
             fdiff_complex = @(r) fdiff(r,c,X(k),Y(k));
             dpsi_comp = quadgk(fdiff_complex, r_min, r_max, 'WayPoints', 0);
-            dpsi_dx(k) = dpsi_dx(k) + real(dpsi_comp);
-            dpsi_dy(k) = dpsi_dy(k) + imag(dpsi_comp);
+            dpsi_dx(k) = dpsi_dx(k) + 2 * real(dpsi_comp);
+            dpsi_dy(k) = dpsi_dy(k) + 2 * imag(dpsi_comp);
          end
          delete(pp)
       else
@@ -97,8 +92,8 @@ function [Ux0 Uy0 varargout] = generate_RO_flow(param, file, l_load, l_save, l_g
             fprintf( '\b\b\b\b\b\b\b\b%6.2f %%', k / n_points_tot * 100 );
             fdiff_complex = @(r) fdiff(r,c,X(k),Y(k));
             dpsi_comp = quadgk(fdiff_complex, r_min, r_max, 'WayPoints', 0);
-            dpsi_dx(k) = dpsi_dx(k) + real(dpsi_comp);
-            dpsi_dy(k) = dpsi_dy(k) + imag(dpsi_comp);
+            dpsi_dx(k) = dpsi_dx(k) + 2 * real(dpsi_comp);
+            dpsi_dy(k) = dpsi_dy(k) + 2 * imag(dpsi_comp);
          end
       end
       
