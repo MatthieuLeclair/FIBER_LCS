@@ -86,9 +86,7 @@ function [Ux0 Uy0 varargout] = generate_RO_flow(param, file, l_load, l_save, l_g
       if( l_parallel )
          pp = parpool(n_proc);
          parfor k = 1:n_points_tot
-            x = X(k);
-            y = Y(k);
-            fdiff_complex = @(r) fdiff(r,c,x,y);
+            fdiff_complex = @(r) fdiff(r,c,X(k),Y(k));
             dpsi_comp = quadgk(fdiff_complex, r_min, r_max, 'WayPoints', 0);
             dpsi_dx(k) = dpsi_dx(k) + real(dpsi_comp);
             dpsi_dy(k) = dpsi_dy(k) + imag(dpsi_comp);
@@ -97,9 +95,7 @@ function [Ux0 Uy0 varargout] = generate_RO_flow(param, file, l_load, l_save, l_g
       else
          for k = 1:n_points_tot
             fprintf( '\b\b\b\b\b\b\b\b%6.2f %%', k / n_points_tot * 100 );
-            x = X(k);
-            y = Y(k);
-            fdiff_complex = @(r) fdiff(r,c,x,y);
+            fdiff_complex = @(r) fdiff(r,c,X(k),Y(k));
             dpsi_comp = quadgk(fdiff_complex, r_min, r_max, 'WayPoints', 0);
             dpsi_dx(k) = dpsi_dx(k) + real(dpsi_comp);
             dpsi_dy(k) = dpsi_dy(k) + imag(dpsi_comp);
